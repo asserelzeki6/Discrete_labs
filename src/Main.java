@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Stack;
 
 interface Expression {
@@ -40,6 +41,29 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
         variableValues.put(variable, value);
     }
 
+    public void evaluateVariablesValues(String expression)
+    {
+        expression = expression.replaceAll(" ", ""); // Remove spaces
+        String[] assignments = expression.split(",");
+
+        for (String assignment : assignments) {
+            String[] parts = assignment.trim().split("=");
+            if (parts.length == 2) {
+                String variableName = parts[0].trim();
+                String value = parts[1].trim();
+
+                if (value.equalsIgnoreCase("true")) {
+                    this.setVariableValue(variableName, true);
+                } else if (value.equalsIgnoreCase("false")) {
+                    this.setVariableValue(variableName, false);
+                } else {
+                    System.out.println("Invalid value for variable: " + variableName);
+                }
+            } else {
+                System.out.println("Invalid assignment format: " + assignment);
+            }
+        }
+    }
     public boolean evaluateExpression(Expression expression) {
         String exp = expression.getRepresentation();
         exp = exp.replaceAll(" ", ""); // Remove spaces
@@ -68,23 +92,23 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
             char c = expression.charAt(i);
             if (c == 'T' || c == 'F') {
                 valueStack.push(c == 'T');
-                printStacks(operatorStack, valueStack);
+                //printStacks(operatorStack, valueStack);
             } else if (c == '(') {
                 operatorStack.push(c);
-                printStacks(operatorStack, valueStack);
+                //printStacks(operatorStack, valueStack);
             } else if (c == ')') {
                 while (!operatorStack.isEmpty() && operatorStack.peek() != '(') {
                     applyOperator(operatorStack, valueStack);
-                    printStacks(operatorStack, valueStack);
+                    //printStacks(operatorStack, valueStack);
                 }
                 operatorStack.pop(); // Pop '('
             } else if (c == '~' || c == '^' || c == 'v' || c == '>') {
                 while (!operatorStack.isEmpty() && hasHigherPrecedence(c, operatorStack.peek())) {
                     applyOperator(operatorStack, valueStack);
-                    printStacks(operatorStack, valueStack);
+                    //printStacks(operatorStack, valueStack);
                 }
                 operatorStack.push(c);
-                printStacks(operatorStack, valueStack);
+                //printStacks(operatorStack, valueStack);
             } else {
                 // Invalid character
                 System.out.println("Wrong expression");
@@ -92,12 +116,12 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
                 return false;
             }
 
-            printStacks(operatorStack, valueStack);
+            //printStacks(operatorStack, valueStack);
         }
 
         while (!operatorStack.isEmpty()) {
             applyOperator(operatorStack, valueStack);
-            printStacks(operatorStack, valueStack);
+            //printStacks(operatorStack, valueStack);
         }
 
         if (valueStack.size() == 1) {
@@ -155,13 +179,14 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
 public class Main {
     public static void main(String[] args) {
         LogicalExpressionEvaluator evaluator = new LogicalExpressionEvaluator();
-        String expression = "(P ^ QQ) v> ~R ";
-        evaluator.setVariableValue("P", true);
-        evaluator.setVariableValue("Q", false);
-        evaluator.setVariableValue("R", true);
+        Scanner sc = new Scanner(System.in);
+        String expression = sc.nextLine();
+        System.out.println();
+        String VariableValuesExpression = sc.nextLine();
 
         LogicalExpression exp = new LogicalExpression(expression);
 
+        evaluator.evaluateVariablesValues(VariableValuesExpression);
         boolean result = evaluator.evaluateExpression(exp);
         System.out.println(result);
     }
