@@ -75,9 +75,7 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
                 else
                     exp = exp.replace(exp.charAt(i), 'F');
             } else {
-                System.out.println("Wrong expression");
-                System.exit(0);
-                return false;
+                exp = exp.replace(exp.charAt(i), 'N');
             }
             }
         }
@@ -86,12 +84,12 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
 
     private boolean evaluateExpressionInternal(String expression) {
         Stack<Character> operatorStack = new Stack<>();
-        Stack<Boolean> valueStack = new Stack<>();
+        Stack<Integer> valueStack = new Stack<>();
 
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
-            if (c == 'T' || c == 'F') {
-                valueStack.push(c == 'T');
+            if (c == 'T' || c == 'F' || c=='N') {
+                valueStack.push(c == 'T'?1:(c=='F'?0:-1));
                 //printStacks(operatorStack, valueStack);
             } else if (c == '(') {
                 operatorStack.push(c);
@@ -125,7 +123,7 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
         }
 
         if (valueStack.size() == 1) {
-            return valueStack.pop();
+            return (valueStack.pop() == 1);
         } else {
             System.out.println("Wrong expression");
             System.exit(0);
@@ -133,28 +131,52 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
         }
     }
 
-    private void applyOperator(Stack<Character> operatorStack, Stack<Boolean> valueStack) {
+    private void applyOperator(Stack<Character> operatorStack, Stack<Integer> valueStack) {
         char operator = operatorStack.pop();
-
+        boolean operand1BoolValue;
+        boolean operand2BoolValue;
         if (operator == '~') {
-            boolean operand = valueStack.pop();
-            valueStack.push(!operand);
+            int operand = valueStack.pop();
+            if(operand == -1) {
+                System.out.println("Wrong expression");
+                System.exit(0);
+            }
+            boolean boolValue = (operand == 1);
+            valueStack.push(boolValue ? 0 : 1);
         } else {
-            boolean operand2 = valueStack.pop();
+            int operand2 = valueStack.pop();
             if(valueStack.isEmpty()) {
                 System.out.println("Wrong expression");
                 System.exit(0);
             }
-            boolean operand1 = valueStack.pop();
+            int operand1 = valueStack.pop();
             switch (operator) {
                 case '^':
-                    valueStack.push(operand1 && operand2);
+                    if(operand1 == -1 || operand2 == -1) {
+                        System.out.println("Wrong expression");
+                        System.exit(0);
+                    }
+                    operand1BoolValue = (operand1 == 1);
+                    operand2BoolValue = (operand2 == 1);
+                    valueStack.push((operand1BoolValue && operand2BoolValue)?1:0);
                     break;
                 case 'v':
-                    valueStack.push(operand1 || operand2);
+                    if((operand1 == -1 && operand2!=1) ||(operand2 == -1 && operand1!=1)) {
+                        System.out.println("Wrong expression");
+                        System.exit(0);
+                    }
+                    operand1BoolValue = (operand1 == 1);
+                    operand2BoolValue = (operand2 == 1);
+                    valueStack.push((operand1BoolValue || operand2BoolValue)?1:0);
                     break;
                 case '>':
-                    valueStack.push(!operand1 || operand2);
+                    if((operand1 == -1 && operand2!=1) ||(operand2 == -1 && operand1!=0)) {
+                        System.out.println("Wrong expression");
+                        System.exit(0);
+                    }
+                    operand1BoolValue = (operand1 == 1);
+                    operand2BoolValue = (operand2 == 1);
+                    valueStack.push((!operand1BoolValue || operand2BoolValue)?1:0);
                     break;
             }
         }
