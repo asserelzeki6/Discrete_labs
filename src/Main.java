@@ -137,12 +137,13 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
         boolean operand2BoolValue;
         if (operator == '~') {
             int operand = valueStack.pop();
-            if(operand == -1) {
-                System.out.println("Wrong expression");
-                System.exit(0);
-            }
             boolean boolValue = (operand == 1);
-            valueStack.push(boolValue ? 0 : 1);
+            if(operand==-1)
+            {
+              valueStack.push(-1);
+            }
+            else {
+            valueStack.push(boolValue ? 0 : 1);}
         } else {
             int operand2 = valueStack.pop();
             if(valueStack.isEmpty()) {
@@ -152,25 +153,27 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
             int operand1 = valueStack.pop();
             switch (operator) {
                 case '^':
-                    if(operand1 == -1 || operand2 == -1) {
+                    if((operand1 == -1 && operand2==1) ||(operand2 == -1 && operand1==1) || ((operand1 == -1 && operand2==-1))) {
                         System.out.println("Wrong expression");
                         System.exit(0);
                     }
+
                     operand1BoolValue = (operand1 == 1);
                     operand2BoolValue = (operand2 == 1);
                     valueStack.push((operand1BoolValue && operand2BoolValue)?1:0);
                     break;
                 case 'v':
-                    if((operand1 == -1 && operand2!=1) ||(operand2 == -1 && operand1!=1)) {
+                    if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==0) || ((operand1 == -1 && operand2==-1))) {
                         System.out.println("Wrong expression");
                         System.exit(0);
                     }
+
                     operand1BoolValue = (operand1 == 1);
                     operand2BoolValue = (operand2 == 1);
                     valueStack.push((operand1BoolValue || operand2BoolValue)?1:0);
                     break;
                 case '>':
-                    if((operand1 == -1 && operand2!=1) ||(operand2 == -1 && operand1!=0)) {
+                    if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==0) || (operand2==-1 && operand1==-1)) {
                         System.out.println("Wrong expression");
                         System.exit(0);
                     }
