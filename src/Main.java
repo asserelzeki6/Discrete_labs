@@ -58,9 +58,11 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
                     this.setVariableValue(variableName, false);
                 } else {
                     System.out.println("Invalid value for variable: " + variableName);
+                    System.exit(0);
                 }
             } else {
                 System.out.println("Invalid assignment format: " + assignment);
+                System.exit(0);
             }
         }
     }
@@ -71,11 +73,11 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
         if(Character.isAlphabetic(exp.charAt(i)) && Character.isUpperCase(exp.charAt(i))) {
             if (variableValues.containsKey(exp.charAt(i)+"")) {
                 if(variableValues.get(exp.charAt(i)+""))
-                    exp = exp.replace(exp.charAt(i), 'T');
+                    exp = exp.replace(exp.charAt(i), 't');
                 else
-                    exp = exp.replace(exp.charAt(i), 'F');
+                    exp = exp.replace(exp.charAt(i), 'f');
             } else {
-                exp = exp.replace(exp.charAt(i), 'N');
+                exp = exp.replace(exp.charAt(i), 'n');
             }
             }
         }
@@ -88,8 +90,8 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
 
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
-            if (c == 'T' || c == 'F' || c=='N') {
-                valueStack.push(c == 'T'?1:(c=='F'?0:-1));
+            if (c == 't' || c == 'f' || c=='n') {
+                valueStack.push(c == 't'?1:(c=='f'?0:-1));
                 //printStacks(operatorStack, valueStack);
             } else if (c == '(') {
                 operatorStack.push(c);
@@ -123,6 +125,11 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
         }
 
         if (valueStack.size() == 1) {
+            if(valueStack.peek()==-1)
+            {
+                System.out.println("Insufficient information");
+                System.exit(0);
+            }
             return (valueStack.pop() == 1);
         } else {
             System.out.println("Wrong expression");
@@ -153,33 +160,53 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
             int operand1 = valueStack.pop();
             switch (operator) {
                 case '^':
-                    if((operand1 == -1 && operand2==1) ||(operand2 == -1 && operand1==1) || ((operand1 == -1 && operand2==-1))) {
-                        System.out.println("Wrong expression");
+                    if((operand1 == -1 && operand2==1) ||(operand2 == -1 && operand1==1) ) {
+                        System.out.println("Insufficient information");
                         System.exit(0);
                     }
-
                     operand1BoolValue = (operand1 == 1);
                     operand2BoolValue = (operand2 == 1);
-                    valueStack.push((operand1BoolValue && operand2BoolValue)?1:0);
+                    if(operand1 == -1 && operand2 == -1)
+                    { valueStack.push(-1);}
+                    else{
+                    valueStack.push((operand1BoolValue && operand2BoolValue)?1:0);}
                     break;
                 case 'v':
-                    if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==0) || ((operand1 == -1 && operand2==-1))) {
-                        System.out.println("Wrong expression");
+                    if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==0) ) {
+                        System.out.println("Insufficient information");
+                        System.exit(0);
+                    }
+                    operand1BoolValue = (operand1 == 1);
+                    operand2BoolValue = (operand2 == 1);
+                    if(operand1 == -1 && operand2 == -1)
+                    { valueStack.push(-1);}
+                    else
+                    {valueStack.push((operand1BoolValue || operand2BoolValue)?1:0);}
+                    break;
+                case '>':
+                    if(operand1==0)
+                    {
+                        valueStack.push(1);
+                        break;
+                    }
+                    if(operand2==1)
+                    {
+                        valueStack.push(1);
+                        break;
+                    }
+                    if(operand1==1 && operand2==0)
+                    {
+                        valueStack.push(0);
+                        break;
+                    }
+                    if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==1) ) {
+                        System.out.println("Insufficient information");
                         System.exit(0);
                     }
 
-                    operand1BoolValue = (operand1 == 1);
-                    operand2BoolValue = (operand2 == 1);
-                    valueStack.push((operand1BoolValue || operand2BoolValue)?1:0);
-                    break;
-                case '>':
-                    if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==0) || (operand2==-1 && operand1==-1)) {
-                        System.out.println("Wrong expression");
-                        System.exit(0);
-                    }
-                    operand1BoolValue = (operand1 == 1);
-                    operand2BoolValue = (operand2 == 1);
-                    valueStack.push((!operand1BoolValue || operand2BoolValue)?1:0);
+
+                    if(operand1 == -1 && operand2 == -1)
+                    {valueStack.push(-1);}
                     break;
             }
         }
@@ -216,3 +243,7 @@ public class Main {
         System.out.println(result);
     }
 }
+
+//((~~~PvQ)>R>FvD)
+//
+// P=false,R=false,F=true
