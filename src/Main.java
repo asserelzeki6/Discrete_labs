@@ -58,10 +58,25 @@ class SimpleInferenceEngine implements InferenceEngine {
     public void addExpression(Expression exp) {
         String exp_string = exp.getRepresentation();
         exp_string = exp_string.replaceAll(" ", "");
+        exp_string = simplifyNegation(exp_string);
         exp.setRepresentation(exp_string);
         expressions.add(exp);
     }
-
+    private String simplifyNegation(String exp)
+    {
+        for(int i=0;i<exp.length();i++)
+        {
+            if(exp.charAt(i)=='~')
+            {
+                if(exp.charAt(i+1)=='~')
+                {
+                    exp = exp.substring(0,i) + exp.substring(i+2);
+                    i--;
+                }
+            }
+        }
+        return exp;
+    }
     @Override
     public Expression applyRules() {
         Expression exp1 = expressions.get(0);
@@ -71,7 +86,7 @@ class SimpleInferenceEngine implements InferenceEngine {
             if (rule.matches(exp1, exp2)) {
                 Expression result = rule.apply(exp1, exp2);
                 expressions.add(result);
-                System.out.println(result.getRepresentation() + " (" + rule.getClass().getSimpleName() + ")");
+                System.out.println(simplifyNegation(result.getRepresentation()) + " (" + rule.getClass().getSimpleName() + ")");
                 expressions.clear();
                 return result;
             }
