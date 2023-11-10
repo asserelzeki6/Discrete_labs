@@ -161,8 +161,8 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
             switch (operator) {
                 case '^':
                     if((operand1 == -1 && operand2==1) ||(operand2 == -1 && operand1==1) ) {
-                        System.out.println("Insufficient information");
-                        System.exit(0);
+                        valueStack.push(-1);
+                        break;
                     }
                     operand1BoolValue = (operand1 == 1);
                     operand2BoolValue = (operand2 == 1);
@@ -173,8 +173,8 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
                     break;
                 case 'v':
                     if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==0) ) {
-                        System.out.println("Insufficient information");
-                        System.exit(0);
+                        valueStack.push(-1);
+                        break;
                     }
                     operand1BoolValue = (operand1 == 1);
                     operand2BoolValue = (operand2 == 1);
@@ -200,8 +200,8 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
                         break;
                     }
                     if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==1) ) {
-                        System.out.println("Insufficient information");
-                        System.exit(0);
+                        valueStack.push(-1);
+                        break;
                     }
 
 
