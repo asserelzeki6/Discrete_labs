@@ -189,7 +189,7 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
         if (op2 == '(') {
             return false;
         }
-        if ((op1 == '~' && (op2 == '^' || op2 == 'v' || op2 == '>')) || (op1 == '^' && (op2 == 'v' || op2 == '>')) || (op1 == 'v' && (op2 == '>'))) {
+        if ((op1 == '~' && (op2 == '^' || op2 == 'v' || op2 == '>' || op2=='~')) || (op1 == '^' && (op2 == 'v' || op2 == '>')) || (op1 == 'v' && (op2 == '>'))) {
             return false;
         }
         return true;
