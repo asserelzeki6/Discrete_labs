@@ -199,15 +199,10 @@ class LogicalExpressionEvaluator implements LogicalExpressionSolver {
                         valueStack.push(0);
                         break;
                     }
-                    if((operand1 == -1 && operand2==0) ||(operand2 == -1 && operand1==1) ) {
+                    else {
                         valueStack.push(-1);
                         break;
                     }
-
-
-                    if(operand1 == -1 && operand2 == -1)
-                    {valueStack.push(-1);}
-                    break;
             }
         }
     }
