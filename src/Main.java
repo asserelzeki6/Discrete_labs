@@ -1,8 +1,11 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 interface Expression {
+
     String getRepresentation();
+
     void setRepresentation(String representation);
 }
 
@@ -69,9 +72,11 @@ class SimpleInferenceEngine implements InferenceEngine {
                 Expression result = rule.apply(exp1, exp2);
                 expressions.add(result);
                 System.out.println(result.getRepresentation() + " (" + rule.getClass().getSimpleName() + ")");
+                expressions.clear();
                 return result;
             }
         }
+        expressions.clear();
         System.out.println("The input expressions cannot be inferred");
         return null;
     }
@@ -80,7 +85,6 @@ class SimpleInferenceEngine implements InferenceEngine {
 class ModusPonens implements InferenceRule {
     //  Modus ponens. Given expressions of the form "P > Q" and "P", the rule
     //allows inferring "Q"
-
     @Override
     public boolean matches(Expression exp1, Expression exp2) {
         String[] exp1_string = new String[2];
@@ -90,18 +94,18 @@ class ModusPonens implements InferenceRule {
                 return false;
             exp1_string = exp1.getRepresentation().replace(" ", "").split(">");
             exp2_string = exp2.getRepresentation();
-//            System.out.println(exp1_string[0] + " " + exp2_string);
-        } else {
+        } else if(exp1.getRepresentation().length() == exp2.getRepresentation().length())
+            return false;
+        else
+        {
             if (!exp2.getRepresentation().contains(">"))
                 return false;
             exp1_string = exp2.getRepresentation().replace(" ", "").split(">");
             exp2_string = exp1.getRepresentation();
-//            System.out.println(exp1_string[0] + " " + exp2_string);
         }
-        if (exp1_string[0].equals(exp2_string)) {
-//            System.out.println(exp1_string[0] + " " + exp2_string);
+        if (exp1_string[0].equals(exp2_string))
             return true;
-        }
+
         return false;
     }
 
@@ -120,22 +124,27 @@ class ModusPonens implements InferenceRule {
 class ModusTollens implements InferenceRule {
     //    Modus tollens. Given expressions of the form "P > Q" and "~Q", the rule
     //    allows inferring "~P"
+    String negation (String exp)
+    {
+        if(exp.charAt(0)!='~')
+            return "~" + exp;
+        return exp.substring(1);
+    }
     @Override
     public boolean matches(Expression exp1, Expression exp2) {
         String[] exp1_string = new String[2];
         String exp2_string = new String();
         if (exp1.getRepresentation().length() > exp2.getRepresentation().length()) {
-            if (!exp1.getRepresentation().contains(">"))
-                return false;
+            if (!exp1.getRepresentation().contains(">")) {return false;}
             exp1_string = exp1.getRepresentation().replace(" ", "").split(">");
             exp2_string = exp2.getRepresentation();
         } else {
-            if (!exp2.getRepresentation().contains(">"))
-                return false;
+            if (!exp2.getRepresentation().contains(">")) {return false;}
+
             exp1_string = exp2.getRepresentation().replace(" ", "").split(">");
             exp2_string = exp1.getRepresentation();
         }
-        if (("~"+exp1_string[0]).equals(exp2_string)) {
+        if (negation(exp1_string[0]).equals(exp2_string) || negation(exp1_string[1]).equals(exp2_string)) {
             return true;
         }
         return false;
@@ -148,7 +157,7 @@ class ModusTollens implements InferenceRule {
             return new LogicalExpression("~"+exp_string[0]);
         }
         String[] exp_string = exp2.getRepresentation().replace(" ", "").split(">");
-        return new LogicalExpression("~"+exp_string[1]);
+        return new LogicalExpression(negation(exp_string[1]));
     }
 
 }
@@ -184,6 +193,12 @@ class HypotheticalSyllogism implements InferenceRule {
 class DisjunctiveSyllogism implements InferenceRule {
     //    Disjunctive syllogism. Given expressions of the form "P v Q" and "~P", the
 //    rule allows inferring "Q"
+    String negation (String exp)
+    {
+        if(exp.charAt(0)!='~')
+            return "~" + exp;
+        return exp.substring(1);
+    }
     @Override
     public boolean matches(Expression exp1, Expression exp2) {
         String[] exp1_string = new String[2];
@@ -193,16 +208,13 @@ class DisjunctiveSyllogism implements InferenceRule {
                 return false;
             exp1_string = exp1.getRepresentation().replace(" ", "").split("v");
             exp2_string = exp2.getRepresentation();
-//            System.out.println(exp1_string[0] + " " + exp2_string);
         } else {
             if (!exp2.getRepresentation().contains("v"))
                 return false;
             exp1_string = exp2.getRepresentation().replace(" ", "").split("v");
             exp2_string = exp1.getRepresentation();
-//            System.out.println(exp1_string[0] + " " + exp2_string);
         }
-        if (("~" + exp1_string[0]).equals(exp2_string) || ("~" + exp2_string).equals(exp1_string[0]) || ("~" + exp1_string[1]).equals(exp2_string) || ("~" + exp2_string).equals(exp1_string[1])) {
-//            System.out.println(exp1_string[0] + " " + exp2_string);
+        if (negation(exp1_string[0]).equals(exp2_string) || negation(exp1_string[1]).equals(exp2_string)) {
             return true;
         }
         return false;
@@ -220,7 +232,7 @@ class DisjunctiveSyllogism implements InferenceRule {
             exp1_string = exp2.getRepresentation().replace(" ", "").split("v");
             exp2_string = exp1.getRepresentation();
         }
-        if (("~" + exp1_string[0]).equals(exp2_string) || ("~" + exp2_string).equals(exp1_string[0]))
+        if (negation(exp1_string[0]).equals(exp2_string))
             return new LogicalExpression(exp1_string[1]);
         return new LogicalExpression(exp1_string[0]);
 
@@ -229,6 +241,12 @@ class DisjunctiveSyllogism implements InferenceRule {
 class Resolution implements InferenceRule {
     //  Resolution. Given expressions of the form "P v Q" and "~P v R", the rule
     //allows inferring "Q v R"
+    String negation (String exp)
+    {
+        if(exp.charAt(0)!='~')
+            return "~" + exp;
+        return exp.substring(1);
+    }
     @Override
     public boolean matches(Expression exp1, Expression exp2) {
         if (!exp1.getRepresentation().contains("v") || !exp2.getRepresentation().contains("v"))
@@ -238,7 +256,7 @@ class Resolution implements InferenceRule {
 
         for (int i = 0; i < 2; i++)
             for (int j = 0; j < 2; j++)
-                if (exp1_string[i].equals("~" + exp2_string[j]) || ("~" + exp1_string[i]).equals(exp2_string[j]))
+                if (exp1_string[i].equals(negation(exp2_string[j])))
                     return true;
         return false;
     }
@@ -250,28 +268,66 @@ class Resolution implements InferenceRule {
         String[] exp2_string = exp2.getRepresentation().replace(" ", "").split("v");
         for (int i = 0; i < 2; i++)
             for (int j = 0; j < 2; j++)
-                if (exp1_string[i].equals("~" + exp2_string[j]) || ("~" + exp1_string[i]).equals(exp2_string[j]))
+                if (exp1_string[i].equals(negation(exp2_string[j])))
                     return new LogicalExpression(exp1_string[1 - i] + " v " + exp2_string[1 - j]);
         return null;
     }
 }
 public class Main {
-        public static void main(String[] args) {
-            InferenceEngine engine = new SimpleInferenceEngine();
-
-            // Add inference rules
-            engine.addRule(new ModusPonens());
-            engine.addRule(new ModusTollens());
-            engine.addRule(new HypotheticalSyllogism());
-            engine.addRule(new DisjunctiveSyllogism());
-            engine.addRule(new Resolution());
-
-            // Add input expressions
-            engine.addExpression(new LogicalExpression("~P"));
-            engine.addExpression(new LogicalExpression("~P > Q^y"));
-
+    public static void main(String[] args) {
+        InferenceEngine engine = new SimpleInferenceEngine();
+        Scanner sc = new Scanner(System.in);
+        // Add inference rules
+        engine.addRule(new ModusPonens());
+        engine.addRule(new ModusTollens());
+        engine.addRule(new HypotheticalSyllogism());
+        engine.addRule(new DisjunctiveSyllogism());
+        engine.addRule(new Resolution());
+        System.out.println("Hello to our program :)");
+        System.out.println("Expression is");
+        System.out.println("P > Q");
+        System.out.println("P");
+        // Add input expressions
+        engine.addExpression(new LogicalExpression("P > Q"));
+        engine.addExpression(new LogicalExpression("P"));
+        engine.applyRules();
+        System.out.println("Expression is");
+        System.out.println("P > Q");
+        System.out.println("~Q");
+        // Add input expressions
+        engine.addExpression(new LogicalExpression("P > Q"));
+        engine.addExpression(new LogicalExpression("~Q"));
+        engine.applyRules();
+        System.out.println("Expression is");
+        System.out.println("P > Q");
+        System.out.println("Q > R");
+        // Add input expressions
+        engine.addExpression(new LogicalExpression("P > Q"));
+        engine.addExpression(new LogicalExpression("Q > R"));
+        engine.applyRules();
+        System.out.println("Expression is");
+        System.out.println("~P v Q");
+        System.out.println("~Q v R");
+        // Add input expressions
+        engine.addExpression(new LogicalExpression("~P v Q"));
+        engine.addExpression(new LogicalExpression("~Q v R"));
+        // Apply inference rules
+        engine.applyRules();
+        while(true)
+        {
+            System.out.println("please enter your expressions in separate lines and without parentheses");
+            String exp1 = sc.nextLine();
+            String exp2 = sc.nextLine();
+            System.out.println("Expression is");
+            System.out.println(exp1);
+            System.out.println(exp2);
+            // Add input expressions3
+            System.out.println("------------");
+            engine.addExpression(new LogicalExpression(exp1));
+            engine.addExpression(new LogicalExpression(exp2));
             // Apply inference rules
             engine.applyRules();
         }
     }
+}
 
