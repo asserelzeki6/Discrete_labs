@@ -141,6 +141,30 @@ class ModusTollens implements InferenceRule {
     //    allows inferring "~P"
     String negation (String exp)
     {
+        if(exp.length()>1 &&  (exp.contains("v") || exp.contains("^"))){
+            for(int i=0;i<exp.length();i++)
+            {
+                if(exp.charAt(i)!='^' && exp.charAt(i)!='v')
+                {
+                    if(exp.charAt(i)=='~')
+                        exp= exp.substring(0,i)+(exp.substring(i+1));
+                    else {
+                        exp = exp.substring(0, i) + "~" + (exp.substring(i));
+                        i++;
+                    }
+                }
+                else if(exp.charAt(i)=='^')
+                    exp=exp.substring(0,i)+"v"+exp.substring(i+1);
+                else
+                    exp=exp.substring(0,i)+"^"+exp.substring(i+1);
+
+            }
+            if(exp.charAt(0)!='~')
+                return "~("+exp+")";
+            return "~"+exp.substring(1);
+        }
+        if(exp.length()>1 && exp.contains(">"))
+            return "~("+exp+")";
         if(exp.charAt(0)!='~')
             return "~" + exp;
         return exp.substring(1);
@@ -149,16 +173,20 @@ class ModusTollens implements InferenceRule {
     public boolean matches(Expression exp1, Expression exp2) {
         String[] exp1_string = new String[2];
         String exp2_string = new String();
-        if (exp1.getRepresentation().length() > exp2.getRepresentation().length()) {
+        if (exp1.getRepresentation().length() > exp2.getRepresentation().length() || (exp1.getRepresentation().length() <= exp2.getRepresentation().length()) &&(exp1.getRepresentation().contains(">"))) {
             if (!exp1.getRepresentation().contains(">")) {return false;}
             exp1_string = exp1.getRepresentation().replace(" ", "").split(">");
             exp2_string = exp2.getRepresentation();
-        } else {
+        } else if(exp1.getRepresentation().length() < exp2.getRepresentation().length() || (exp1.getRepresentation().length() >= exp2.getRepresentation().length() && ( exp2.getRepresentation().contains(">" )))){
             if (!exp2.getRepresentation().contains(">")) {return false;}
 
             exp1_string = exp2.getRepresentation().replace(" ", "").split(">");
             exp2_string = exp1.getRepresentation();
         }
+        else{
+            return false;
+        }
+
         if (negation(exp1_string[0]).equals(exp2_string) || negation(exp1_string[1]).equals(exp2_string)) {
             return true;
         }
@@ -167,9 +195,9 @@ class ModusTollens implements InferenceRule {
 
     @Override
     public Expression apply(Expression exp1, Expression exp2) {
-        if (exp1.getRepresentation().length() > exp2.getRepresentation().length()) {
+        if (exp1.getRepresentation().length() > exp2.getRepresentation().length() || (exp1.getRepresentation().length() == exp2.getRepresentation().length() && (exp1.getRepresentation().contains(">") ))) {
             String[] exp_string = exp1.getRepresentation().replace(" ", "").split(">");
-            return new LogicalExpression("~"+exp_string[0]);
+            return new LogicalExpression(negation(exp_string[0]));
         }
         String[] exp_string = exp2.getRepresentation().replace(" ", "").split(">");
         return new LogicalExpression(negation(exp_string[1]));
@@ -210,6 +238,30 @@ class DisjunctiveSyllogism implements InferenceRule {
 //    rule allows inferring "Q"
     String negation (String exp)
     {
+        if(exp.length()>1 &&  (exp.contains("v") || exp.contains("^"))){
+            for(int i=0;i<exp.length();i++)
+            {
+                if(exp.charAt(i)!='^' && exp.charAt(i)!='v')
+                {
+                    if(exp.charAt(i)=='~')
+                        exp= exp.substring(0,i)+(exp.substring(i+1));
+                    else {
+                        exp = exp.substring(0, i) + "~" + (exp.substring(i));
+                        i++;
+                    }
+                }
+                else if(exp.charAt(i)=='^')
+                    exp=exp.substring(0,i)+"v"+exp.substring(i+1);
+                else
+                    exp=exp.substring(0,i)+"^"+exp.substring(i+1);
+
+            }
+            if(exp.charAt(0)!='~')
+                return "~("+exp+")";
+            return "~"+exp.substring(1);
+        }
+        if(exp.length()>1 && exp.contains(">"))
+            return "~("+exp+")";
         if(exp.charAt(0)!='~')
             return "~" + exp;
         return exp.substring(1);
@@ -258,6 +310,30 @@ class Resolution implements InferenceRule {
     //allows inferring "Q v R"
     String negation (String exp)
     {
+        if(exp.length()>1 &&  (exp.contains("v") || exp.contains("^"))){
+            for(int i=0;i<exp.length();i++)
+            {
+                if(exp.charAt(i)!='^' && exp.charAt(i)!='v')
+                {
+                    if(exp.charAt(i)=='~')
+                        exp= exp.substring(0,i)+(exp.substring(i+1));
+                    else {
+                        exp = exp.substring(0, i) + "~" + (exp.substring(i));
+                        i++;
+                    }
+                }
+                else if(exp.charAt(i)=='^')
+                    exp=exp.substring(0,i)+"v"+exp.substring(i+1);
+                else
+                    exp=exp.substring(0,i)+"^"+exp.substring(i+1);
+
+            }
+            if(exp.charAt(0)!='~')
+                return "~("+exp+")";
+            return "~"+exp.substring(1);
+        }
+        if(exp.length()>1 && exp.contains(">"))
+            return "~("+exp+")";
         if(exp.charAt(0)!='~')
             return "~" + exp;
         return exp.substring(1);
@@ -299,6 +375,7 @@ public class Main {
         engine.addRule(new DisjunctiveSyllogism());
         engine.addRule(new Resolution());
         System.out.println("Hello to our program :)");
+        System.out.println("Here are some basic examples");
         System.out.println("Expression is");
         System.out.println("P > Q");
         System.out.println("P");
